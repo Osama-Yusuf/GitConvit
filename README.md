@@ -1,3 +1,9 @@
+<div align="center">
+   <!-- <h1>GitConvit</h1> -->
+    <img src="./logo.jpg" alt="Profile Image" style="border-radius: 10%; width: 300px; height: 300px; object-fit: cover;">
+        <p>GitConvit, an AI-powered tool that generates conventional commit messages with emojis based on the changes in your Git repository.</p>
+</div>
+
 # GitConvit AI Conventional Commit Message Generator
 
 Welcome to GitConvit, an AI-powered tool that generates conventional commit messages with emojis based on the changes in your Git repository. This tool leverages the `llama3:latest` model from `ollama` to create commit messages that follow conventional commit standards, ensuring that your commit history is informative and well-structured.
