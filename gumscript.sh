@@ -90,7 +90,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     prompt="$instruction\nChanges:\n$combined_diffs"
 
     # Save prompt to file
-    # echo -e "$prompt" > prompt.txt
+    echo -e "$prompt" > prompt.txt
 
     # Make the POST request to the AI model
     response=$(curl -s -X POST http://localhost:11434/api/chat \
@@ -134,38 +134,32 @@ push() {
 
     while true; do
         echo -e "\nCommit message: $commit_message\n"
-        echo -e "📂 Current directory: ${PWD}\n🌐 Remote: ${current_remote_name}/${current_branch}"
-        echo -e "Options: [ENTER to continue, r to regenerate, p to add input, m to manually enter, e to edit, CTRL+C to abort]"
-        read -p "Select an option: " user_input
-
-        if [ "$user_input" == "r" ]; then
-            echo "🔄 Regenerating commit message..."
-            commit_message=$(commit_msg_value)
-        elif [ "$user_input" == "p" ]; then
-            read -p "📝 Enter additional input for the AI: " user_input_prompt
-            commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
-        elif [ "$user_input" == "m" ]; then
-            read -p "✍️  Enter the commit message manually: " commit_message
-            break
-        elif [ "$user_input" == "e" ]; then
-            temp_file=$(mktemp)
-            echo "# Edit the commit message below. To save and exit press ESC key then ZZ." > "$temp_file"
-            echo "$commit_message" >> "$temp_file"
-            vim "$temp_file"
-            commit_message=$(sed -n '2p' "$temp_file")
-            rm "$temp_file"
-            echo -e "\nUpdated commit message: $commit_message\n"
-            echo -e "Options: [ENTER to continue, r to regenerate, p to add input, m to manually enter, e to edit, CTRL+C to abort]"
-            read -p "Select an option: " user_input
-
-            if [ "$user_input" == "r" ] || [ "$user_input" == "p" ] || [ "$user_input" == "m" ]; then
-                continue
-            else
+        gum confirm "Do you want to use this commit message?" && break
+        option=$(gum choose "Regenerate" "Add Input" "Manual" "Edit")
+        
+        case $option in
+            "Regenerate")
+                echo "🔄 Regenerating commit message..."
+                commit_message=$(commit_msg_value)
+                ;;
+            "Add Input")
+                user_input_prompt=$(gum input --placeholder "Enter additional input for the AI")
+                commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
+                ;;
+            "Manual")
+                commit_message=$(gum input --placeholder "Enter the commit message manually")
                 break
-            fi
-        else
-            break
-        fi
+                ;;
+            "Edit")
+                temp_file=$(mktemp)
+                echo "# Edit the commit message below. To save and exit press ESC key then ZZ." > "$temp_file"
+                echo "$commit_message" >> "$temp_file"
+                gum write --filename "$temp_file"
+                commit_message=$(sed -n '2p' "$temp_file")
+                rm "$temp_file"
+                echo -e "\nUpdated commit message: $commit_message\n"
+                ;;
+        esac
     done
 
     git add . && git commit -m "$commit_message" && git push "$current_remote_name" "$current_branch"
