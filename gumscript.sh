@@ -1,9 +1,11 @@
 #!/bin/bash
 
+GIT_COLOR="#f14e32"
+
 # Check if the previous command succeeded; if not, exit with a message
 check_success() {
     if [ $? -ne 0 ]; then
-        echo "$1"
+        gum style --foreground "$GIT_COLOR" "🚫 $1"
         exit 1
     fi
 }
@@ -11,7 +13,7 @@ check_success() {
 # Function to check if the current directory is a Git repository
 check_git_init() {
     git rev-parse --show-toplevel > /dev/null 2>&1
-    check_success "🚫 The current directory is not a Git repository."
+    check_success "The current directory is not a Git repository."
 }
 
 # Function to run a command and capture its output
@@ -65,7 +67,7 @@ generate_commit_message() {
     combined_diffs="$file_diffs\n$additional_diffs"
 
     if [ -z "$combined_diffs" ]; then
-        echo "🚫 There's no files changed or error in retrieving changed files."
+        echo "There's no files changed or error in retrieving changed files."
         exit 1
     fi
 
@@ -98,7 +100,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     response=$(gum spin --title "Generating commit message..." -- curl -s -X POST http://localhost:11434/api/chat \
         -H "Content-Type: application/json" \
         -d "$(jq -n --arg prompt "$prompt" '{"model": "llama3:latest", "messages": [{"role": "user", "content": $prompt}]}')")
-    check_success "🚫 Failed to make POST request to the AI model."
+    check_success "Failed to make POST request to the AI model."
 
     # Process response to handle multi-part responses
     response_content=$(echo "$response" | jq -r '.message.content')
@@ -106,7 +108,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
 
     echo "$commit_message"
     if [ -z "$commit_message" ]; then
-        echo "🚫 Failed to generate commit message."
+        echo "Failed to generate commit message."
         exit 1
     fi
 }
@@ -165,12 +167,10 @@ push() {
                 break
                 ;;
             "Edit")
-                temp_file=$(mktemp)
-                echo "# Edit the commit message below. To save and exit press ESC key then ZZ." > "$temp_file"
-                echo "$commit_message" >> "$temp_file"
-                vim "$temp_file"
-                commit_message=$(sed '1d' "$temp_file")
-                rm "$temp_file"
+                commit_message=$(gum input --cursor.foreground=green \
+                    --prompt.foreground=green --prompt="" \
+                    --placeholder "$commit_message" --value="$commit_message"  \
+                    --width=160 )
                 echo -e "\nUpdated commit message: $commit_message\n"
                 ;;
             "Exit")
