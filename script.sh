@@ -1,12 +1,17 @@
 #!/bin/bash
 
+# Check if the previous command succeeded; if not, exit with a message
+check_success() {
+    if [ $? -ne 0 ]; then
+        echo $1
+        exit 1
+    fi
+}
+
 # Function to check if the current directory is a Git repository
 check_git_init() {
     git rev-parse --show-toplevel > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "The current directory is not a Git repository."
-        exit 1
-    fi
+    check_success "The current directory is not a Git repository."
 }
 
 # Function to run a command and capture its output
@@ -59,6 +64,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     response=$(curl -s -X POST http://localhost:11434/api/chat \
         -H "Content-Type: application/json" \
         -d "$(jq -n --arg prompt "$prompt" '{"model": "llama3:latest", "messages": [{"role": "user", "content": $prompt}]}')")
+    check_success "Failed to make POST request to the AI model."
 
     # Process response to handle multi-part responses
     response_content=$(echo "$response" | jq -r '.message.content')
@@ -87,17 +93,27 @@ commit_msg_value() {
 }
 
 push() {
-    current_branch=$(git branch | awk '{print $2}')
+    current_branch=$(git branch --show-current)
     current_remote_name=$(git remote -v | awk 'NR==1{print $1}')
-    commit_message=$(commit_msg_value)
-    if [ -z "$commit_message" ]; then
-        echo "Failed to generate commit message."
-        exit 1
-    fi
+    
+    while true; do
+        commit_message=$(commit_msg_value)
+        if [ -z "$commit_message" ]; then
+            echo "Failed to generate commit message."
+            exit 1
+        fi
 
-    echo -e "Commit message: $commit_message\n"
-    echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
-    read -p "Press Enter to continue or CTRL+C to abort..."
+        echo -e "Commit message: $commit_message\n"
+        echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
+        read -p "Press Enter to continue, 'r' to recreate the commit message, or CTRL+C to abort: " user_input
+
+        if [ "$user_input" == "r" ]; then
+            echo "Recreating commit message..."
+        else
+            break
+        fi
+    done
+    
     git add . && git commit -m "$commit_message" && git push "$current_remote_name" "$current_branch"
 }
 
