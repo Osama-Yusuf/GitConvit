@@ -58,7 +58,7 @@ generate_commit_message() {
     prompt="$instruction\nChanges:\n$file_diffs\nremember to Give the commit message directly, start with the emoji"
     
     # Save prompt to file
-    echo -e "$prompt" > prompt.txt
+    # echo -e "$prompt" > prompt.txt
     
     # Make the POST request to the AI model
     response=$(curl -s -X POST http://localhost:11434/api/chat \
