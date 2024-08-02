@@ -92,7 +92,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     prompt="$instruction\nChanges:\n$combined_diffs"
 
     # Save prompt to file
-    echo -e "$prompt" > prompt.txt
+    # echo -e "$prompt" > prompt.txt
 
     # gum spin --title "Converting to GIF" --
 
