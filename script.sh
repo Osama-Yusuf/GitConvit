@@ -3,7 +3,7 @@
 # Check if the previous command succeeded; if not, exit with a message
 check_success() {
     if [ $? -ne 0 ]; then
-        echo $1
+        echo "$1"
         exit 1
     fi
 }
@@ -35,7 +35,7 @@ get_git_status() {
 # Function to get file diffs
 get_file_diffs() {
     file_diffs=$(run_command "git diff")
-    echo "$file_diffs" 
+    echo "$file_diffs"
 }
 
 # Function to generate diffs for untracked and tracked files with no changes
@@ -125,20 +125,21 @@ commit_msg_value() {
 push() {
     current_branch=$(git branch --show-current)
     current_remote_name=$(git remote -v | awk 'NR==1{print $1}')
-    
-    while true; do
-        commit_message=$(commit_msg_value)
-        if [ -z "$commit_message" ]; then
-            echo "There's no commit message to commit."
-            exit 1
-        fi
 
+    commit_message=$(commit_msg_value)
+    if [ -z "$commit_message" ]; then
+        echo "There's no commit message to commit."
+        exit 1
+    fi
+
+    while true; do
         echo -e "Commit message: $commit_message\n"
         echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
         read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, 'e' to edit the AI-generated commit message, or CTRL+C to abort: " user_input
 
         if [ "$user_input" == "r" ]; then
             echo "Recreating commit message..."
+            commit_message=$(commit_msg_value)
         elif [ "$user_input" == "p" ]; then
             read -p "Enter additional input for the AI: " user_input_prompt
             commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
@@ -147,18 +148,24 @@ push() {
             break
         elif [ "$user_input" == "e" ]; then
             temp_file=$(mktemp)
-            echo "# Edit the commit message below. to save and exit press ESC key then ZZ." > "$temp_file"
+            echo "# Edit the commit message below. To save and exit press ESC key then ZZ." > "$temp_file"
             echo "$commit_message" >> "$temp_file"
             vim "$temp_file"
             commit_message=$(sed -n '2p' "$temp_file")
             rm "$temp_file"
             echo -e "Updated commit message: $commit_message\n"
-            read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, or CTRL+C to abort: " user_input
+            read -p "Press Enter to continue with this commit message, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, or CTRL+C to abort: " user_input
+
+            if [ "$user_input" == "r" ] || [ "$user_input" == "p" ] || [ "$user_input" == "m" ]; then
+                continue
+            else
+                break
+            fi
         else
             break
         fi
     done
-    
+
     git add . && git commit -m "$commit_message" && git push "$current_remote_name" "$current_branch"
 }
 
