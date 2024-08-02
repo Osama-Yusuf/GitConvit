@@ -119,8 +119,6 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     # Save prompt to file
     # echo -e "$prompt" > prompt.txt
 
-    # gum spin --title "Converting to GIF" --
-
     # Make the POST request to the AI model
     response=$(gum spin --title "Generating commit message..." -- curl -s -X POST http://localhost:11434/api/chat \
         -H "Content-Type: application/json" \
@@ -163,7 +161,7 @@ push() {
 
     while true; do
         echo -e "\nCommit message: $commit_message\n"
-        option=$(gum choose "Use Commit" "Regenerate" "Add Input" "Manual" "Edit" "Exit")
+        option=$(gum choose "Use Commit" "Regenerate" "Add to prompt" "Manual" "Edit" "Exit")
         
         case $option in
             "Use Commit")
@@ -173,7 +171,7 @@ push() {
                 echo "🔄 Regenerating commit message..."
                 commit_message=$(commit_msg_value)
                 ;;
-            "Add Input")
+            "Add to prompt")
                 user_input_prompt=$(gum input --placeholder "Enter additional input for the AI")
                 commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
                 ;;
@@ -218,5 +216,4 @@ main() {
     fi
     push
 }
-
 main

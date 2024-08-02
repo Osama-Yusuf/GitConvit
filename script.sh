@@ -179,6 +179,7 @@ main() {
         echo "🚫 No files changed."
         exit 1
     fi
+    echo "Generating commit message..."
     push
 }
 
