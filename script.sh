@@ -154,8 +154,8 @@ push() {
 
 main() {
     check_git_init
-    get_changed_files
     get_git_status
+    get_changed_files
     push
 }
 
