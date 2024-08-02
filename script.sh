@@ -41,6 +41,11 @@ generate_commit_message() {
     local files_changed=$1
     local file_diffs=$2
 
+    if [ -z "$files_changed" ] || [ -z "$file_diffs" ]; then
+        echo "There's no files changed or error in retrieving changed files."
+        exit 1
+    fi
+
     # Instruction for the AI model
     instruction="Generate a conventional commit message with emojis based on the changes given below. \
 Use the following categories and emojis:
@@ -71,6 +76,10 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     commit_message=$(echo "$response_content" | tr -d '\n')
 
     echo "$commit_message"
+    if [ -z "$commit_message" ]; then
+        echo "Failed to generate commit message."
+        exit 1
+    fi
 }
 
 commit_msg_value() {
@@ -81,14 +90,8 @@ commit_msg_value() {
             commit_message=$(generate_commit_message "$files_changed" "$file_diffs")
             if [ -n "$commit_message" ]; then
                 echo "$commit_message"
-            else
-                echo "Failed to generate commit message."
-                exit 1
             fi
         fi
-    else
-        echo "No files changed or error in retrieving changed files."
-        exit 1
     fi
 }
 
@@ -99,7 +102,7 @@ push() {
     while true; do
         commit_message=$(commit_msg_value)
         if [ -z "$commit_message" ]; then
-            echo "Failed to generate commit message."
+            echo "There's no commit message to commit."
             exit 1
         fi
 
@@ -121,5 +124,4 @@ main() {
     check_git_init
     push
 }
-
 main
