@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Function to check if the current directory is a Git repository
+check_git_init() {
+    # Try to get the root directory of the current Git repository
+    git rev-parse --show-toplevel > /dev/null 2>&1
+    # Check if the command was successful
+    if [ $? -ne 0 ]; then
+        echo "The current directory is not a Git repository."
+        exit 1
+    else
+        echo "" > /dev/null 2>&1
+    fi
+}
+
 # Function to run a command and capture its output
 run_command() {
     command_output=$(eval "$1")
@@ -37,14 +50,15 @@ generate_commit_message() {
     'refactor': '🔨',
     'chore': '🚀',
     'config': '⚙️'
-    For example: 📝 docs(README.md): add installation method with docker
-    Please respond with a one-liner commit message, nothing more."
+    Please respond with a one-liner commit message, nothing more, 
+    For example: 
+    📝 docs(README.md): add installation method with docker"
     
     # Prepare the prompt for the AI model
-    prompt="$instruction\nChanges:\n$file_diffs"
+    prompt="$instruction\nChanges:\n$file_diffs\nremember to Give the commit message directly, start with the emoji"
     
     # Save prompt to file
-    echo -e "$prompt" > prompt.txt
+    # echo -e "$prompt" > prompt.txt
     
     # Make the POST request to the AI model
     response=$(curl -s -X POST http://localhost:11434/api/chat \
@@ -57,14 +71,33 @@ generate_commit_message() {
     echo "$full_message"
 }
 
-# Main script execution
-files_changed=$(get_changed_files)
-if [ -n "$files_changed" ]; then
-    file_diffs=$(get_file_diffs)
-    if [ -n "$file_diffs" ]; then
-        commit_message=$(generate_commit_message "$files_changed" "$file_diffs")
-        if [ -n "$commit_message" ]; then
-            echo "$commit_message"
+commit_msg_value() {
+    files_changed=$(get_changed_files)
+    if [ -n "$files_changed" ]; then
+        file_diffs=$(get_file_diffs)
+        if [ -n "$file_diffs" ]; then
+            commit_message=$(generate_commit_message "$files_changed" "$file_diffs")
+            if [ -n "$commit_message" ]; then
+                echo "$commit_message"
+            fi
         fi
     fi
-fi
+}
+
+push() {
+    current_branch=$(git branch | awk '{print $2}')
+    current_remote_name=$(git remote -v | awk 'NR==1{print $1}')
+    commit_message=$(commit_msg_value)
+
+    echo -e "Commit message: "$commit_message"\n"
+    echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
+    read -p "Press Enter to continue or CTRL+C to abort..."
+    git add . && git commit -m "$commit_message" && git push $current_remote_name $current_branch
+}
+
+main() {
+    check_git_init
+    push
+}
+
+main

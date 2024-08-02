@@ -44,8 +44,8 @@ def generate_commit_message(files_changed, file_diffs):
     # print(f"Prompt for AI has been saved to prompt.txt")
 
     # Save prompt to file
-    with open('prompt.txt', 'w') as f:
-        f.write(prompt)
+    # with open('prompt.txt', 'w') as f:
+    #     f.write(prompt)
 
     response = requests.post(
         'http://localhost:11434/api/chat',
