@@ -23,7 +23,7 @@ def get_file_diffs():
 
 def generate_commit_message(files_changed, file_diffs):
     # print("Generating commit message...")
-    # test
+
     # Instruction for the AI model
     instruction = (
         "Generate a conventional commit message with emojis based on the changes given below. "

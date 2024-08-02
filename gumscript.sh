@@ -176,16 +176,36 @@ push() {
                 ;;
             "Manual")
                 TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
+                if [ -z "$TYPE" ]; then
+                    error_log "No commit type selected."
+                    exit 1
+                fi
                 SCOPE=$(gum input --placeholder "scope")
+                if [ -z "$SCOPE" ]; then
+                    SCOPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
+                fi
 
                 # Since the scope is optional, wrap it in parentheses if it has a value.
                 test -n "$SCOPE" && SCOPE="($SCOPE)"
 
                 # Pre-populate the input with the type(scope): so that the user may change it
                 SUMMARY=$(gum input --value "$TYPE$SCOPE: " --placeholder "Summary of this change")
+                if [ -z "$SUMMARY" ]; then
+                    error_log "No summary provided."
+                    exit 1
+                fi
+
                 DESCRIPTION=$(gum write --placeholder "Details of this change")
+                if [ -z "$DESCRIPTION" ]; then
+                    error_log "No description provided."
+                    exit 1
+                fi
 
                 commit_message="$SUMMARY\n\n$DESCRIPTION"
+                if [ -z "$commit_message" ]; then
+                    error_log "No commit message provided."
+                    exit 1
+                fi
                 break
                 ;;
             "Edit")
