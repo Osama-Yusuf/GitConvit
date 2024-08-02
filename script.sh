@@ -11,7 +11,7 @@ check_success() {
 # Function to check if the current directory is a Git repository
 check_git_init() {
     git rev-parse --show-toplevel > /dev/null 2>&1
-    check_success "The current directory is not a Git repository."
+    check_success "🚫 The current directory is not a Git repository."
 }
 
 # Function to run a command and capture its output
@@ -65,7 +65,7 @@ generate_commit_message() {
     combined_diffs="$file_diffs\n$additional_diffs"
 
     if [ -z "$combined_diffs" ]; then
-        echo "There's no files changed or error in retrieving changed files."
+        echo "🚫 There's no files changed or error in retrieving changed files."
         exit 1
     fi
 
@@ -96,7 +96,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     response=$(curl -s -X POST http://localhost:11434/api/chat \
         -H "Content-Type: application/json" \
         -d "$(jq -n --arg prompt "$prompt" '{"model": "llama3:latest", "messages": [{"role": "user", "content": $prompt}]}')")
-    check_success "Failed to make POST request to the AI model."
+    check_success "🚫 Failed to make POST request to the AI model."
 
     # Process response to handle multi-part responses
     response_content=$(echo "$response" | jq -r '.message.content')
@@ -104,7 +104,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
 
     echo "$commit_message"
     if [ -z "$commit_message" ]; then
-        echo "Failed to generate commit message."
+        echo "🚫 Failed to generate commit message."
         exit 1
     fi
 }
@@ -128,23 +128,24 @@ push() {
 
     commit_message=$(commit_msg_value)
     if [ -z "$commit_message" ]; then
-        echo "There's no commit message to commit."
+        echo "🚫 There's no commit message to commit."
         exit 1
     fi
 
     while true; do
-        echo -e "Commit message: $commit_message\n"
-        echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
-        read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, 'e' to edit the AI-generated commit message, or CTRL+C to abort: " user_input
+        echo -e "\nCommit message: $commit_message\n"
+        echo -e "📂 Current directory: ${PWD}\n🌐 Remote: ${current_remote_name}/${current_branch}"
+        echo -e "Options: [ENTER to continue, r to regenerate, p to add input, m to manually enter, e to edit, CTRL+C to abort]"
+        read -p "Select an option: " user_input
 
         if [ "$user_input" == "r" ]; then
-            echo "Recreating commit message..."
+            echo "🔄 Regenerating commit message..."
             commit_message=$(commit_msg_value)
         elif [ "$user_input" == "p" ]; then
-            read -p "Enter additional input for the AI: " user_input_prompt
+            read -p "📝 Enter additional input for the AI: " user_input_prompt
             commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
         elif [ "$user_input" == "m" ]; then
-            read -p "Enter the commit message manually: " commit_message
+            read -p "✍️  Enter the commit message manually: " commit_message
             break
         elif [ "$user_input" == "e" ]; then
             temp_file=$(mktemp)
@@ -153,8 +154,9 @@ push() {
             vim "$temp_file"
             commit_message=$(sed -n '2p' "$temp_file")
             rm "$temp_file"
-            echo -e "Updated commit message: $commit_message\n"
-            read -p "Press Enter to continue with this commit message, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, or CTRL+C to abort: " user_input
+            echo -e "\nUpdated commit message: $commit_message\n"
+            echo -e "Options: [ENTER to continue, r to regenerate, p to add input, m to manually enter, e to edit, CTRL+C to abort]"
+            read -p "Select an option: " user_input
 
             if [ "$user_input" == "r" ] || [ "$user_input" == "p" ] || [ "$user_input" == "m" ]; then
                 continue
@@ -174,7 +176,7 @@ main() {
     git_status=$(get_git_status)
     files_changed=$(get_changed_files)
     if [ -z "$git_status" ] && [ -z "$files_changed" ]; then
-        echo "No files changed."
+        echo "🚫 No files changed."
         exit 1
     fi
     push
