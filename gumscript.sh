@@ -164,6 +164,7 @@ push() {
 
     git add . && git commit -m "$commit_message" && git push "$current_remote_name" "$current_branch"
 }
+# comment for test
 
 main() {
     check_git_init
