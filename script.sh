@@ -25,6 +25,7 @@ get_changed_files() {
     files_changed=$(run_command "git diff --name-only")
     if [ -z "$files_changed" ]; then
         echo "No files changed."
+        exit 1
     else
         echo "$files_changed" > /dev/null
     fi
@@ -35,6 +36,7 @@ get_git_status() {
     git_status=$(run_command "git status --porcelain")
     if [ -z "$git_status" ]; then
         echo "No files changed."
+        exit 1
     else
         echo "$git_status" > /dev/null
     fi
