@@ -1,19 +1,44 @@
 #!/bin/bash
 
-GIT_COLOR="#f14e32"
+FAIL_COLOR="#f14e32"
+SUCCESS_COLOR="#2b8a3e"
+
+success_log() {
+    gum style --foreground "$SUCCESS_COLOR" "✅ $1"
+}
+
+error_log() {
+    gum style --foreground "$FAIL_COLOR" "🚫 $1"
+}
 
 # Check if the previous command succeeded; if not, exit with a message
 check_success() {
     if [ $? -ne 0 ]; then
-        gum style --foreground "$GIT_COLOR" "🚫 $1"
+        error_log "$1"
         exit 1
     fi
 }
+
 
 # Function to check if the current directory is a Git repository
 check_git_init() {
     git rev-parse --show-toplevel > /dev/null 2>&1
     check_success "The current directory is not a Git repository."
+}
+
+check_ollama() {
+    if ! command -v ollama &> /dev/null
+    then
+        error_log "ollama could not be found. Please install it and try again."
+        exit 1
+    # now try to curl it
+    elif curl --output /dev/null --silent --head --fail http://localhost:11434
+    then
+        success_log "ollama is running on http://localhost:11434."
+    else
+        error_log "ollama is not running. Please start it and try again."
+        exit 1
+    fi
 }
 
 # Function to run a command and capture its output
@@ -67,7 +92,7 @@ generate_commit_message() {
     combined_diffs="$file_diffs\n$additional_diffs"
 
     if [ -z "$combined_diffs" ]; then
-        echo "There's no files changed or error in retrieving changed files."
+        error_log "There's no files changed or error in retrieving changed files."
         exit 1
     fi
 
@@ -108,7 +133,7 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
 
     echo "$commit_message"
     if [ -z "$commit_message" ]; then
-        echo "Failed to generate commit message."
+        error_log "Failed to generate commit message."
         exit 1
     fi
 }
@@ -132,7 +157,7 @@ push() {
 
     commit_message=$(commit_msg_value)
     if [ -z "$commit_message" ]; then
-        echo "🚫 There's no commit message to commit."
+        error_log "There's no commit message to commit."
         exit 1
     fi
 
@@ -183,11 +208,12 @@ push() {
 }
 
 main() {
+    check_ollama
     check_git_init
     git_status=$(get_git_status)
     files_changed=$(get_changed_files)
     if [ -z "$git_status" ] && [ -z "$files_changed" ]; then
-        echo "🚫 No files changed."
+        error_log "🚫 No files changed."
         exit 1
     fi
     push
