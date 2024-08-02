@@ -147,7 +147,17 @@ push() {
                 commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
                 ;;
             "Manual")
-                commit_message=$(gum input --placeholder "Enter the commit message manually")
+                TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
+                SCOPE=$(gum input --placeholder "scope")
+
+                # Since the scope is optional, wrap it in parentheses if it has a value.
+                test -n "$SCOPE" && SCOPE="($SCOPE)"
+
+                # Pre-populate the input with the type(scope): so that the user may change it
+                SUMMARY=$(gum input --value "$TYPE$SCOPE: " --placeholder "Summary of this change")
+                DESCRIPTION=$(gum write --placeholder "Details of this change")
+
+                commit_message="$SUMMARY\n\n$DESCRIPTION"
                 break
                 ;;
             "Edit")
@@ -164,7 +174,6 @@ push() {
 
     git add . && git commit -m "$commit_message" && git push "$current_remote_name" "$current_branch"
 }
-# comment for test
 
 main() {
     check_git_init
