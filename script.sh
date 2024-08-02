@@ -26,21 +26,16 @@ get_changed_files() {
     echo "$files_changed"
 }
 
-# Function to get file diffs
-get_file_diffs() {
-    file_diffs=$(run_command "git diff")
-    echo "$file_diffs"
-}
-
 # Function to get git status
 get_git_status() {
     git_status=$(run_command "git status --porcelain")
-    if [ -z "$git_status" ]; then
-        echo "No files changed."
-        exit 1
-    else
-        echo "$git_status" > /dev/null
-    fi
+    echo "$git_status"
+}
+
+# Function to get file diffs
+get_file_diffs() {
+    file_diffs=$(run_command "git diff")
+    echo "$file_diffs" 
 }
 
 # Function to generate diffs for untracked and tracked files with no changes
@@ -149,7 +144,12 @@ push() {
 
 main() {
     check_git_init
-    get_git_status
+    git_status=$(get_git_status)
+    files_changed=$(get_changed_files)
+    if [ -z "$git_status" ] && [ -z "$files_changed" ]; then
+        echo "No files changed."
+        exit 1
+    fi
     push
 }
 
