@@ -1,25 +1,9 @@
 #!/bin/bash
 
-# Check if the previous command succeeded; if not, exit with a message
-check_success() {
-    if [ $? -ne 0 ]; then
-        echo $1
-        exit 1
-    fi
-}
-
 # Function to check if the current directory is a Git repository
 check_git_init() {
     git rev-parse --show-toplevel > /dev/null 2>&1
     check_success "The current directory is not a Git repository."
-}
-
-check_changed_files() {
-    changed_files=$(get_changed_files)
-    if [ -z "$changed_files" ]; then
-        echo "No files changed."
-        exit 1
-    fi
 }
 
 # Function to run a command and capture its output
@@ -28,22 +12,38 @@ run_command() {
     echo "$command_output"
 }
 
+# Check if the previous command succeeded; if not, exit with a message
+check_success() {
+    if [ $? -ne 0 ]; then
+        echo $1
+        exit 1
+    fi
+}
+
 # Function to get changed files
 get_changed_files() {
     files_changed=$(run_command "git diff --name-only")
-    echo "$files_changed"
-}
-
-# Function to get file diffs
-get_file_diffs() {
-    file_diffs=$(run_command "git diff")
-    echo "$file_diffs"
+    if [ -z "$files_changed" ]; then
+        echo "No files changed."
+    else
+        echo "$files_changed" > /dev/null
+    fi
 }
 
 # Function to get git status
 get_git_status() {
     git_status=$(run_command "git status --porcelain")
-    echo "$git_status"
+    if [ -z "$git_status" ]; then
+        echo "No files changed."
+    else
+        echo "$git_status" > /dev/null
+    fi
+}
+
+# Function to get file diffs
+get_file_diffs() {
+    file_diffs=$(run_command "git diff")
+    echo "$file_diffs" 
 }
 
 # Function to generate diffs for untracked and tracked files with no changes
@@ -152,7 +152,8 @@ push() {
 
 main() {
     check_git_init
-    check_changed_files
+    get_changed_files
+    get_git_status
     push
 }
 
