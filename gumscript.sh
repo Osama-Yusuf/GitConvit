@@ -134,10 +134,12 @@ push() {
 
     while true; do
         echo -e "\nCommit message: $commit_message\n"
-        gum confirm "Do you want to use this commit message?" && break
-        option=$(gum choose "Regenerate" "Add Input" "Manual" "Edit")
+        option=$(gum choose "Use Commit" "Regenerate" "Add Input" "Manual" "Edit" "Exit")
         
         case $option in
+            "Use Commit")
+                break
+                ;;
             "Regenerate")
                 echo "🔄 Regenerating commit message..."
                 commit_message=$(commit_msg_value)
@@ -168,6 +170,9 @@ push() {
                 commit_message=$(sed '1d' "$temp_file")
                 rm "$temp_file"
                 echo -e "\nUpdated commit message: $commit_message\n"
+                ;;
+            "Exit")
+                exit 0
                 ;;
         esac
     done
