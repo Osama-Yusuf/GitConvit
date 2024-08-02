@@ -2,14 +2,10 @@
 
 # Function to check if the current directory is a Git repository
 check_git_init() {
-    # Try to get the root directory of the current Git repository
     git rev-parse --show-toplevel > /dev/null 2>&1
-    # Check if the command was successful
     if [ $? -ne 0 ]; then
         echo "The current directory is not a Git repository."
         exit 1
-    else
-        echo "" > /dev/null 2>&1
     fi
 }
 
@@ -39,10 +35,10 @@ get_file_diffs() {
 generate_commit_message() {
     local files_changed=$1
     local file_diffs=$2
-    
+
     # Instruction for the AI model
     instruction="Generate a conventional commit message with emojis based on the changes given below. \
-    Use the following categories and emojis:
+Use the following categories and emojis:
     'docs': '📝',
     'feat': '✨',
     'fix': '🐛',
@@ -50,25 +46,25 @@ generate_commit_message() {
     'refactor': '🔨',
     'chore': '🚀',
     'config': '⚙️'
-    Please respond with a one-liner commit message, nothing more, 
-    For example: 
-    📝 docs(README.md): add installation method with docker"
-    
+For example: 📝 docs(README.md): add installation method with docker
+Please respond with a one-liner commit message, nothing more. Remember to give the commit message directly, starting with the emoji."
+
     # Prepare the prompt for the AI model
-    prompt="$instruction\nChanges:\n$file_diffs\nremember to Give the commit message directly, start with the emoji"
-    
+    prompt="$instruction\nChanges:\n$file_diffs"
+
     # Save prompt to file
-    # echo -e "$prompt" > prompt.txt
-    
+    echo -e "$prompt" > prompt.txt
+
     # Make the POST request to the AI model
     response=$(curl -s -X POST http://localhost:11434/api/chat \
         -H "Content-Type: application/json" \
-    -d "$(jq -n --arg prompt "$prompt" '{"model": "llama3:latest", "messages": [{"role": "user", "content": $prompt}]}')")
-    
+        -d "$(jq -n --arg prompt "$prompt" '{"model": "llama3:latest", "messages": [{"role": "user", "content": $prompt}]}')")
+
     # Process response to handle multi-part responses
-    full_message=$(echo "$response" | jq -r '.message.content' | tr -d '\n')
-    
-    echo "$full_message"
+    response_content=$(echo "$response" | jq -r '.message.content')
+    commit_message=$(echo "$response_content" | tr -d '\n')
+
+    echo "$commit_message"
 }
 
 commit_msg_value() {
@@ -92,10 +88,10 @@ push() {
     current_remote_name=$(git remote -v | awk 'NR==1{print $1}')
     commit_message=$(commit_msg_value)
 
-    echo -e "Commit message: "$commit_message"\n"
+    echo -e "Commit message: $commit_message\n"
     echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
     read -p "Press Enter to continue or CTRL+C to abort..."
-    git add . && git commit -m "$commit_message" && git push $current_remote_name $current_branch
+    git add . && git commit -m "$commit_message" && git push "$current_remote_name" "$current_branch"
 }
 
 main() {
