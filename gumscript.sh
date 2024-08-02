@@ -19,7 +19,6 @@ check_success() {
     fi
 }
 
-
 # Function to check if the current directory is a Git repository
 check_git_init() {
     git rev-parse --show-toplevel > /dev/null 2>&1
@@ -206,6 +205,12 @@ push() {
 }
 
 main() {
+    # check gum
+    if ! command -v gum &> /dev/null
+    then
+        echo "gum could not be found. Please install it and try again."
+        exit 1
+    fi
     check_ollama
     check_git_init
     git_status=$(get_git_status)

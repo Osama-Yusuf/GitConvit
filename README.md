@@ -28,6 +28,21 @@ The following categories and emojis are used for generating commit messages:
    - Ensure that `ollama` is running and accessible at `http://localhost:11434`.
    - Ensure you have a model like `llama3:latest` configured with `ollama`.
 
+## Why Three Scripts?
+
+To cater to different user preferences and environments, we provide three versions of the script:
+
+1. **Python Script (`script.py`)**:
+    - For users who prefer Python and want a straightforward approach without additional dependencies.
+
+2. **Bash Script without Dependencies (`script.sh`)**:
+    - For users who prefer a bash script without any additional dependencies. This version has a basic user interface and functionality.
+
+3. **Bash Script with `gum` (`gumscript.sh`)**:
+    - For users who want a significantly enhanced user experience with a modern, interactive UI. This version requires the `gum` tool to be installed.
+
+You can choose the version that best fits your needs and preferences.
+
 
 ## Installation
 
@@ -39,7 +54,7 @@ The following categories and emojis are used for generating commit messages:
 
 2. **Make the Script Executable**:
     ```bash
-    chmod +x script.sh
+    chmod +x gumscript.sh
     ```
 
 3. **Install Dependencies**:
@@ -50,12 +65,18 @@ The following categories and emojis are used for generating commit messages:
 
 4. **Add the Script to your bin directory**:
     ```bash
-    sudo cp script.sh /usr/local/bin/gitconvit
+    sudo cp gumscript.sh /usr/local/bin/gitconvit
     ```
 
 5. **Install and Setup `ollama`**:
     - Follow the instructions to install and set up `ollama` from [ollama's official documentation](https://www.ollama.com/docs).
     - Ensure that `ollama` is running and accessible at `http://localhost:11434`.
+
+6. **Install `gum` (Optional for Enhanced UX/UI)**:
+    - If you want to use the `gum` enhanced script:
+      ```bash
+      brew install gum
+      ```
 
 ## Usage
 
@@ -65,7 +86,7 @@ To generate and use a conventional commit message, run the script:
 gitconvit
 ```
 
-The script will:
+#### Script Workflow
 
 1. Check if you are in a Git repository.
 2. Detect the changed files.
