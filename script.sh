@@ -23,10 +23,6 @@ run_command() {
 # Function to get changed files
 get_changed_files() {
     files_changed=$(run_command "git diff --name-only")
-    if [ -z "$files_changed" ]; then
-        echo "No files changed or error in retrieving changed files."
-        exit 1
-    fi
     echo "$files_changed"
 }
 
@@ -36,12 +32,38 @@ get_file_diffs() {
     echo "$file_diffs"
 }
 
+# Function to get git status
+get_git_status() {
+    git_status=$(run_command "git status --porcelain")
+    echo "$git_status"
+}
+
+# Function to generate diffs for untracked and tracked files with no changes
+generate_diff_for_untracked_files() {
+    local git_status="$1"
+    diffs=""
+
+    while IFS= read -r line; do
+        status=${line:0:2}
+        file=${line:3}
+        if [[ $status == "??" || $status == " M" || $status == "A " ]]; then
+            diff=$(git diff --no-index /dev/null "$file")
+            diffs+="$diff\n"
+        fi
+    done <<< "$git_status"
+
+    echo -e "$diffs"
+}
+
 # Function to generate commit message using the AI model
 generate_commit_message() {
-    local files_changed=$1
-    local file_diffs=$2
+    local files_changed="$1"
+    local file_diffs="$2"
+    local additional_diffs="$3"
 
-    if [ -z "$files_changed" ] || [ -z "$file_diffs" ]; then
+    combined_diffs="$file_diffs\n$additional_diffs"
+
+    if [ -z "$combined_diffs" ]; then
         echo "There's no files changed or error in retrieving changed files."
         exit 1
     fi
@@ -60,7 +82,7 @@ For example: 📝 docs(README.md): add installation method with docker
 Please respond with a one-liner commit message, nothing more. Remember to give the commit message directly, starting with the emoji."
 
     # Prepare the prompt for the AI model
-    prompt="$instruction\nChanges:\n$file_diffs"
+    prompt="$instruction\nChanges:\n$combined_diffs"
 
     # Save prompt to file
     echo -e "$prompt" > prompt.txt
@@ -84,15 +106,15 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
 
 commit_msg_value() {
     files_changed=$(get_changed_files)
-    if [ -n "$files_changed" ]; then
-        file_diffs=$(get_file_diffs)
-        if [ -n "$file_diffs" ]; then
-            commit_message=$(generate_commit_message "$files_changed" "$file_diffs")
-            if [ -n "$commit_message" ]; then
-                echo "$commit_message"
-            fi
-        fi
+    file_diffs=$(get_file_diffs)
+    if [ -z "$file_diffs" ]; then
+        git_status=$(get_git_status)
+        additional_diffs=$(generate_diff_for_untracked_files "$git_status")
+        commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs")
+    else
+        commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "")
     fi
+    echo "$commit_message"
 }
 
 push() {
@@ -124,4 +146,5 @@ main() {
     check_git_init
     push
 }
+
 main
