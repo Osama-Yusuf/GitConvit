@@ -60,6 +60,7 @@ generate_commit_message() {
     local files_changed="$1"
     local file_diffs="$2"
     local additional_diffs="$3"
+    local user_input_prompt="$4"
 
     combined_diffs="$file_diffs\n$additional_diffs"
 
@@ -80,6 +81,10 @@ Use the following categories and emojis:
     'config': '⚙️'
 For example: 📝 docs(README.md): add installation method with docker
 Please respond with a one-liner commit message, nothing more. Remember to give the commit message directly, starting with the emoji."
+
+    if [ -n "$user_input_prompt" ]; then
+        instruction+="\nAdditional context from user: $user_input_prompt"
+    fi
 
     # Prepare the prompt for the AI model
     prompt="$instruction\nChanges:\n$combined_diffs"
@@ -110,9 +115,9 @@ commit_msg_value() {
     if [ -z "$file_diffs" ]; then
         git_status=$(get_git_status)
         additional_diffs=$(generate_diff_for_untracked_files "$git_status")
-        commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs")
+        commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "")
     else
-        commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "")
+        commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "" "")
     fi
     echo "$commit_message"
 }
@@ -130,10 +135,16 @@ push() {
 
         echo -e "Commit message: $commit_message\n"
         echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
-        read -p "Press Enter to continue, 'r' to recreate the commit message, or CTRL+C to abort: " user_input
+        read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, or CTRL+C to abort: " user_input
 
         if [ "$user_input" == "r" ]; then
             echo "Recreating commit message..."
+        elif [ "$user_input" == "p" ]; then
+            read -p "Enter additional input for the AI: " user_input_prompt
+            commit_message=$(generate_commit_message "$files_changed" "$file_diffs" "$additional_diffs" "$user_input_prompt")
+        elif [ "$user_input" == "m" ]; then
+            read -p "Enter the commit message manually: " commit_message
+            break
         else
             break
         fi
