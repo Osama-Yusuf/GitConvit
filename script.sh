@@ -90,6 +90,10 @@ push() {
     current_branch=$(git branch | awk '{print $2}')
     current_remote_name=$(git remote -v | awk 'NR==1{print $1}')
     commit_message=$(commit_msg_value)
+    if [ -z "$commit_message" ]; then
+        echo "Failed to generate commit message."
+        exit 1
+    fi
 
     echo -e "Commit message: $commit_message\n"
     echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
