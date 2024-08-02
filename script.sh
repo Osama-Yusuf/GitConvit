@@ -14,6 +14,14 @@ check_git_init() {
     check_success "The current directory is not a Git repository."
 }
 
+check_changed_files() {
+    changed_files=$(get_changed_files)
+    if [ -z "$changed_files" ]; then
+        echo "No files changed."
+        exit 1
+    fi
+}
+
 # Function to run a command and capture its output
 run_command() {
     command_output=$(eval "$1")
@@ -144,6 +152,7 @@ push() {
 
 main() {
     check_git_init
+    check_changed_files
     push
 }
 
