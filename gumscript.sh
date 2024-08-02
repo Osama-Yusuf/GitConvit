@@ -92,8 +92,10 @@ Please respond with a one-liner commit message, nothing more. Remember to give t
     # Save prompt to file
     echo -e "$prompt" > prompt.txt
 
+    # gum spin --title "Converting to GIF" --
+
     # Make the POST request to the AI model
-    response=$(curl -s -X POST http://localhost:11434/api/chat \
+    response=$(gum spin --title "Generating commit message..." -- curl -s -X POST http://localhost:11434/api/chat \
         -H "Content-Type: application/json" \
         -d "$(jq -n --arg prompt "$prompt" '{"model": "llama3:latest", "messages": [{"role": "user", "content": $prompt}]}')")
     check_success "🚫 Failed to make POST request to the AI model."
