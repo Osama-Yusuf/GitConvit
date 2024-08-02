@@ -80,6 +80,9 @@ commit_msg_value() {
                 exit 1
             fi
         fi
+    else
+        echo "No files changed or error in retrieving changed files."
+        exit 1
     fi
 }
 
