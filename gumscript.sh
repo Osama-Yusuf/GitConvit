@@ -164,8 +164,8 @@ push() {
                 temp_file=$(mktemp)
                 echo "# Edit the commit message below. To save and exit press ESC key then ZZ." > "$temp_file"
                 echo "$commit_message" >> "$temp_file"
-                gum write --filename "$temp_file"
-                commit_message=$(sed -n '2p' "$temp_file")
+                vim "$temp_file"
+                commit_message=$(sed '1d' "$temp_file")
                 rm "$temp_file"
                 echo -e "\nUpdated commit message: $commit_message\n"
                 ;;
