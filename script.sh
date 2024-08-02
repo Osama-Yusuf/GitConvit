@@ -135,7 +135,7 @@ push() {
 
         echo -e "Commit message: $commit_message\n"
         echo -e "You are currently in: ${PWD}. ${current_remote_name}/${current_branch}"
-        read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, or CTRL+C to abort: " user_input
+        read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, 'e' to edit the AI-generated commit message, or CTRL+C to abort: " user_input
 
         if [ "$user_input" == "r" ]; then
             echo "Recreating commit message..."
@@ -145,6 +145,15 @@ push() {
         elif [ "$user_input" == "m" ]; then
             read -p "Enter the commit message manually: " commit_message
             break
+        elif [ "$user_input" == "e" ]; then
+            temp_file=$(mktemp)
+            echo "# Edit the commit message below. to save and exit press ESC key then ZZ." > "$temp_file"
+            echo "$commit_message" >> "$temp_file"
+            vim "$temp_file"
+            commit_message=$(sed -n '2p' "$temp_file")
+            rm "$temp_file"
+            echo -e "Updated commit message: $commit_message\n"
+            read -p "Press Enter to continue, 'r' to recreate the commit message, 'p' to provide additional input to AI, 'm' to manually enter the commit message, or CTRL+C to abort: " user_input
         else
             break
         fi
