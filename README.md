@@ -8,10 +8,9 @@
 This tool leverages the `llama3:latest` model from `ollama` to create commit messages that follow conventional commit standards, ensuring that your commit history is informative and well-structured.
 
 ## Features
-
 - Automatically detects changes in your Git repository.
 - Generates conventional commit messages with appropriate emojis.
-- Interactive prompt to confirm or regenerate the commit message.
+- Interactive prompt to confirm or regenerate the commit message along other options.
 - Ensures that all changes are committed with a single, informative message.
 
 ## Emojis and Categories
@@ -29,9 +28,26 @@ The following categories and emojis are used for generating commit messages:
 ## Prerequisites
 
 1. **Install `ollama`**:
-   - Follow the instructions to install and set up `ollama` from [ollama's official documentation](https://www.ollama.com/docs).
+   - Download and install `ollama` from [ollama's official website](https://www.ollama.com/download).
    - Ensure that `ollama` is running and accessible at `http://localhost:11434`.
-   - Ensure you have a model like `llama3:latest` configured with `ollama`.
+   - Pull the `latest` version of the `llama3` model. with the following command:
+        ```bash
+        ollama pull llama3:latest
+        ```
+2. **Install `gum` (Optional for Enhanced UI/UX)**:
+    - If you want to use the `gum` enhanced script:
+      ```bash
+        # macOS or Linux
+        brew install gum
+
+        # Arch Linux (btw)
+        pacman -S gum
+
+        # Windows (via WinGet or Scoop)
+        winget install charmbracelet.gum
+        scoop install charm-gum
+      ```
+    - More installation methods [here](https://github.com/charmbracelet/gum#Installation).
 
 ## Why Three Scripts?
 
@@ -72,16 +88,6 @@ You can choose the version that best fits your needs and preferences.
     ```bash
     sudo cp gumscript.sh /usr/local/bin/gitconvit
     ```
-
-5. **Install and Setup `ollama`**:
-    - Follow the instructions to install and set up `ollama` from [ollama's official documentation](https://www.ollama.com/docs).
-    - Ensure that `ollama` is running and accessible at `http://localhost:11434`.
-
-6. **Install `gum` (Optional for Enhanced UX/UI)**:
-    - If you want to use the `gum` enhanced script:
-      ```bash
-      brew install gum
-      ```
 
 ## Usage
 

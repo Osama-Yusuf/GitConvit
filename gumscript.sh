@@ -33,7 +33,7 @@ check_ollama() {
     # now try to curl it
     elif curl --output /dev/null --silent --head --fail http://localhost:11434
     then
-        success_log "ollama is running on http://localhost:11434."
+        success_log "ollama is running on http://localhost:11434." > /dev/null
     else
         error_log "ollama is not running. Please start it and try again."
         exit 1
