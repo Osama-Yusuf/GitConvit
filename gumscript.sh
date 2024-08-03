@@ -236,7 +236,7 @@ main() {
     git_status=$(get_git_status)
     files_changed=$(get_changed_files)
     if [ -z "$git_status" ] && [ -z "$files_changed" ]; then
-        error_log "🚫 No files changed."
+        error_log "No files changed."
         exit 1
     fi
     push
