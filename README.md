@@ -25,6 +25,15 @@ The following categories and emojis are used for generating commit messages:
 - `chore`: 🚀
 - `config`: ⚙️
 
+## Screenshots 
+
+![Screenshot 01](img/gc-sc1.png)
+
+![Screenshot 02](img/gc-sc2.png)
+
+![Screenshot 03](img/gc-sc3.png)
+
+
 ## Prerequisites
 
 1. **Install `ollama`**:
