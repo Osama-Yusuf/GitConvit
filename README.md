@@ -141,6 +141,14 @@ Here is an example of how the commit message might look:
 📝 docs(README.md): added installation method with docker
 ```
 
+### Todo
+
+- [ ] Add a flag to select different ollama model than llama3
+- [ ] Add a flag to select different ai model than ollama like openai models or google gemeni or grok
+- [ ] Add a tutorial GIF in the readme file
+- [ ] Add an (add) option that will list all files changed and user can multiselect files with gum/fzf/case
+- [ ] Make the emojis optional 
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and create a pull request with your changes.
