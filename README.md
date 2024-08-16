@@ -147,7 +147,11 @@ Here is an example of how the commit message might look:
 - [ ] Add a flag to select different ai model than ollama like openai models or google gemeni or grok
 - [ ] Add a tutorial GIF in the readme file
 - [ ] Add an (add) option that will list all files changed and user can multiselect files with gum/fzf/case
-- [ ] Make the emojis optional 
+- [ ] Make the emojis optional
+- [X] Add an option to edit the AI output
+- [X] Add an option to pass a prompt to the initial main prompt
+- [X] Add an option to create the convential commit manually by taking three inputs the category, the context, and a short discription
+- [X] Add an option to recreate the AI output
 
 ## Contributing
 
